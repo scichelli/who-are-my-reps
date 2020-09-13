@@ -62,7 +62,8 @@ def printCsv(divisions, offices, officials):
                     official = officials[i]
                     phones = ", ".join(official.phones)
                     urls = " ".join(official.urls)
-                    twitter = [c['id'] for c in official.channels if c['type'] == 'Twitter']
+                    twitterList = [c['id'] for c in official.channels if c['type'] == 'Twitter']
+                    twitter = next(iter(twitterList or []), None)
                     repWriter.writerow([official.name, office.name, official.party, phones, urls, twitter])
 
 if  __name__ == '__main__':
