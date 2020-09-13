@@ -27,18 +27,21 @@ class Official:
         self.channels = officialDict.get('channels',[])
 
 
-address = {'address': '1100 Congress Ave, Austin, TX 78701'}
-myRepsResponse = requests.get('https://www.commoncause.org/wp-json/google_civic/v1/address', params=address)
-myRepsJson = myRepsResponse.json()
+def pullData(address):
+    addressParam = {'address': address}
+    myRepsResponse = requests.get('https://www.commoncause.org/wp-json/google_civic/v1/address', params=addressParam)
+    myRepsJson = myRepsResponse.json()
 
-divisionsJson = myRepsJson['divisions']
-divisions = {k:Division(divisionsJson[k]) for k in divisionsJson.keys()}
+    divisionsJson = myRepsJson['divisions']
+    divisions = {k:Division(divisionsJson[k]) for k in divisionsJson.keys()}
 
-offices = [Office(x) for x in myRepsJson['offices']]
+    offices = [Office(x) for x in myRepsJson['offices']]
 
-officials = [Official(x) for x in myRepsJson['officials']]
+    officials = [Official(x) for x in myRepsJson['officials']]
 
-def printList():
+    return divisions, offices, officials
+
+def printList(divisions, offices, officials):
     for office in offices:
         print(office.name)
         print(divisions[office.divisionId].name)
@@ -46,7 +49,7 @@ def printList():
             print(officials[i].name)
         print('----')
 
-def printCsv():
+def printCsv(divisions, offices, officials):
     with open('MyRepresentatives.csv', 'w', newline='') as csvfile:
         repWriter = csv.writer(csvfile, dialect='excel-tab')
         repWriter.writerow(['Official','Office','Party','Phones','Urls','Twitter'])
@@ -62,4 +65,7 @@ def printCsv():
                     twitter = [c['id'] for c in official.channels if c['type'] == 'Twitter']
                     repWriter.writerow([official.name, office.name, official.party, phones, urls, twitter])
 
-printCsv()
+if  __name__ == '__main__':
+    address = input('Address in the format "1100 Congress Ave, Austin, TX 78701" (will be sent to commoncause.org): ')
+    divisions, offices, officials = pullData(address)
+    printCsv(divisions, offices, officials)
